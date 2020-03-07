@@ -48,7 +48,7 @@ public class MyResultSet implements java.sql.ResultSet {
 
     @Override
     public boolean next() throws SQLException {
-        boolean result = itr.hasNext();
+        var result = itr.hasNext();
 
         if (result) {
             current = itr.next();

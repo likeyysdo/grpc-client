@@ -31,6 +31,7 @@ import java.util.concurrent.Executor;
 public class MyConnection implements Connection {
 
     public MyConnection(String uri, Properties info) throws SQLException {
+        System.out.println("jdbc uri: " + uri);
     }
 
     @Override

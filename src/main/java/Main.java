@@ -9,7 +9,7 @@ import java.sql.SQLException;
 public class Main {
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        String url = "jdbc:myjdbc://localhost:80/testdb";
+        var url = "jdbc:myjdbc://localhost:80/testdb";
 
         Class.forName("cn.orz.pascal.jdbc.MyDriver");
         try (var con = DriverManager.getConnection(url); var st = con.createStatement()) {
