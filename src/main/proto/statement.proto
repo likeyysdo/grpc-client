@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "io.quarkus.remote";
+option java_outer_classname = "Statement";
+
+package query;
+
+// The simple statement service definition.
+service SimpleStatement {
+  // Sends a Statement
+  rpc exec (SimpleStatementRequest) returns (stream SimpleStatementResponse) {}
+}
+
+// The request message containing the user's name.
+message SimpleStatementRequest {
+  string access_token = 1;
+  string body = 2;
+}
+
+// The response message containing the greetings
+message SimpleStatementResponse {
+  string message = 1;
+  repeated bytes body = 2;
+}
