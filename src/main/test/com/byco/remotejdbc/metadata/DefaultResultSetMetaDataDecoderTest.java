@@ -25,22 +25,18 @@ class DefaultResultSetMetaDataDecoderTest {
                 ResultSetMetaData metaData = rs.getMetaData();
                 byte[] meta = new DefaultResultSetMetaDataEncoder().encode(metaData);
 
-
-
                 ResultRowEncodeFactory factory = new ResultRowEncodeFactory.Builder( rs.getMetaData()).build();
                 byte[] result = new byte[0];
                 while (rs.next()) {
                     factory.add(rs);
                     result = factory.encode();
                 }
-
                 System.out.println("//Decode");
                 ResultSetMetaData decodeMeta = new DefaultResultSetMetaDataDecoder().decode(meta);
                 System.out.println(decodeMeta);
                 ResultRowDecodeFactory factory1 = new ResultRowDecodeFactory.Builder(decodeMeta).build();
                 Object[] rr = factory1.read(result);
                 System.out.println(Arrays.toString(rr));
-
             }
         }
     }

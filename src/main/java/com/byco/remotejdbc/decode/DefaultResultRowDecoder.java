@@ -78,7 +78,6 @@ public class DefaultResultRowDecoder implements ResultRowDecoder {
         defaultBigDecimalList[7] =  decodeBigDecimal7Scale;
         defaultBigDecimalList[8] =  decodeBigDecimal8Scale;
 
-
         decodeDate = (x) -> new java.sql.Date(x.readUInt64());
         decodeTime = (x) -> new java.sql.Time(x.readUInt64());
         decodeTimestamp = (x) -> new java.sql.Timestamp(x.readUInt64());

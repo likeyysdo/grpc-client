@@ -6,20 +6,43 @@ option java_outer_classname = "Statement";
 
 package query;
 
+enum ClientStatus {
+  CLIENT_STATUS_UNKNOWN = 0;
+  CLIENT_STATUS_INITIALIZE = 1;
+  CLIENT_STATUS_FINISHED = 2;
+  CLIENT_STATUS_ERROR = 3;
+  CLIENT_STATUS_SEND_STATEMENT = 4;
+  CLIENT_STATUS_RECEIVE_DATA = 5;
+  CLIENT_STATUS_CANCEL = 6;
+}
+
+enum ServerStatus{
+  SERVER_STATUS_UNKNOWN = 0;
+  SERVER_STATUS_INITIALIZED = 1;
+  SERVER_STATUS_FINISHED = 2;
+  SERVER_STATUS_ERROR = 3;
+  SERVER_STATUS_RECEIVED_STATEMENT = 4;
+  SERVER_STATUS_HAS_NEXT_DATA = 5;
+  SERVER_STATUS_NOT_HAS_NEXT_DATA = 6;
+  SERVER_STATUS_CANCELED = 7;
+}
+
 // The simple statement service definition.
 service SimpleStatement {
   // Sends a Statement
-  rpc exec (SimpleStatementRequest) returns (stream SimpleStatementResponse) {}
+  rpc exec (stream SimpleStatementRequest) returns (stream SimpleStatementResponse) {}
 }
+
 
 // The request message containing the user's name.
 message SimpleStatementRequest {
-  string access_token = 1;
+  ClientStatus status = 1;
   string body = 2;
 }
 
 // The response message containing the greetings
 message SimpleStatementResponse {
-  string message = 1;
-  repeated bytes body = 2;
+  ServerStatus status = 1;
+  string body = 2;
+  repeated bytes result = 3;
 }

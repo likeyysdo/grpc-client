@@ -2,9 +2,11 @@ package com.byco.remotejdbc.metadata;
 
 
 import com.byco.remotejdbc.type.RemoteType;
+import java.sql.JDBCType;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * @Classname DefaultResultSetMetaData
@@ -13,7 +15,7 @@ import java.util.Arrays;
  * @Created by byco
  */
 public class DefaultResultSetMetaData implements java.sql.ResultSetMetaData{
-    private Field[] fields;
+    private final Field[] fields;
 
     @Override
     public String toString() {
@@ -22,8 +24,12 @@ public class DefaultResultSetMetaData implements java.sql.ResultSetMetaData{
             '}';
     }
 
+
+
     public DefaultResultSetMetaData(Field[] fields) {
         this.fields = fields;
+
+
     }
 
     public DefaultResultSetMetaData( ResultSetMetaData resultSetMetaData ) throws SQLException {
@@ -130,7 +136,8 @@ public class DefaultResultSetMetaData implements java.sql.ResultSetMetaData{
      */
     @Override
     public boolean isSigned(int column) throws SQLException {
-        return false;
+        int type = getField(column).getJdbcType();
+        return  type == RemoteType.DECIMAL.jdbcType || type == RemoteType.NUMERIC.jdbcType;
     }
 
     /**
