@@ -2,7 +2,6 @@ package com.byco.remotejdbc.decode.statement;
 
 import com.byco.remotejdbc.decode.ResultRowDecodeFactory;
 import com.byco.remotejdbc.metadata.DefaultResultSetMetaDataDecoder;
-import com.byco.remotejdbc.rpc.HelloWorldClient;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -17,8 +16,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /**
  * @Classname QuerrySession
@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @Date 2022/7/14 13:23
  * @Created by byco
  */
-public class QuerySession {
+public class ClientSessionTest {
 
     public void execute(){
 
@@ -35,6 +35,10 @@ public class QuerySession {
     public static void main(String[] args) throws InterruptedException, IOException, SQLException {
         String target = "localhost:9000";
         final CountDownLatch countDownLatch = new CountDownLatch(1);
+        final CyclicBarrier cyclicBarrier = new CyclicBarrier(1);
+        Semaphore semaphore = new Semaphore(1);
+        cyclicBarrier.reset();
+
         ManagedChannel channel = ManagedChannelBuilder.forTarget(target)
             // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
             // needing certificates.
@@ -75,6 +79,7 @@ public class QuerySession {
                     }
 
                 }
+                semaphore.release();
             }
 
             @Override
@@ -92,15 +97,18 @@ public class QuerySession {
         SimpleStatementRequest request = SimpleStatementRequest.newBuilder()
                 .setStatus(ClientStatus.CLIENT_STATUS_INITIALIZE)
             .build();
+        semaphore.acquire();
         requestObserver.onNext(request);
         request = SimpleStatementRequest.newBuilder()
                 .setStatus(ClientStatus.CLIENT_STATUS_SEND_STATEMENT)
                     .setBody("SELECT * from bundle")
                         .build();
+        semaphore.acquire();
         requestObserver.onNext(request);
         request = SimpleStatementRequest.newBuilder()
             .setStatus(ClientStatus.CLIENT_STATUS_RECEIVE_DATA)
             .build();
+        semaphore.acquire();
         requestObserver.onNext(request);
 
         requestObserver.onCompleted();

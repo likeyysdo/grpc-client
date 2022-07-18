@@ -10,8 +10,12 @@ import java.util.concurrent.ArrayBlockingQueue;
  */
 public class DefaultResultRow implements ResultRow {
 
-    private final ArrayBlockingQueue<Object[]> queue = new ArrayBlockingQueue<Object[]>(200);
 
+    private final ArrayBlockingQueue<Object[]> queue;
+
+    public DefaultResultRow(int capacity){
+        queue = new ArrayBlockingQueue<Object[]>(capacity);
+    }
 
     @Override
     public boolean hasNext() {
