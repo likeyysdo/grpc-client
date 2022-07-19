@@ -19,7 +19,7 @@ public class DefaultResultRow implements ResultRow {
 
     @Override
     public boolean hasNext() {
-        return false;
+        return !isEmpty();
     }
 
     @Override
@@ -42,6 +42,11 @@ public class DefaultResultRow implements ResultRow {
         for( Object[] o : objects ){
             queue.put(o);
         }
+    }
+
+    @Override
+    public int size() {
+        return queue.size();
     }
 
 }

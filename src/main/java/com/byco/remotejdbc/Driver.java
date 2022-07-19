@@ -2,6 +2,7 @@ package com.byco.remotejdbc;
 
 import com.byco.remotejdbc.constant.Constants;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -24,7 +25,23 @@ public class Driver implements  java.sql.Driver{
         }
     }
 
+    public static void main(String[] args) throws SQLException, ClassNotFoundException {
+        var url = "jdbc:remotejdbc://localhost:9000";
 
+        Class.forName("com.byco.remotejdbc.Driver");
+        try (var con = DriverManager.getConnection(url); var st = con.createStatement()) {
+            try (var rs = st.executeQuery("SELECT * from film")) {
+                int  c = rs.getMetaData().getColumnCount();
+                while (rs.next()) {
+                    for( int i = 1 ; i <= c ;i++){
+                        System.out.print(rs.getString(i));
+                        System.out.print(", ");
+                    }
+                    System.out.println();
+                }
+            }
+        }
+    }
 
     /**
      * Attempts to make a database connection to the given URL.

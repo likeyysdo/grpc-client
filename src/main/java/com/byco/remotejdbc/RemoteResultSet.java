@@ -1,5 +1,6 @@
 package com.byco.remotejdbc;
 
+import com.byco.remotejdbc.decode.statement.ClientStub;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -28,6 +29,12 @@ import java.util.Map;
  * @Created by byco
  */
 public class RemoteResultSet implements java.sql.ResultSet{
+    ClientStub stub;
+
+    public RemoteResultSet(ClientStub stub) {
+        this.stub = stub;
+    }
+
     /**
      * Moves the cursor forward one row from its current position.
      * A <code>ResultSet</code> cursor is initially positioned

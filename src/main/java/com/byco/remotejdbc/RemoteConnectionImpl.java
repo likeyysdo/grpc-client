@@ -1,5 +1,9 @@
 package com.byco.remotejdbc;
 
+import com.byco.remotejdbc.constant.Constants;
+import com.byco.remotejdbc.decode.statement.ClientChannel;
+import com.byco.remotejdbc.decode.statement.ClientSession;
+import com.byco.remotejdbc.decode.statement.DefaultStatemntImpl;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -25,7 +29,13 @@ import java.util.concurrent.Executor;
  * @Created by byco
  */
 public class RemoteConnectionImpl implements java.sql.Connection{
+
+    private ClientChannel channel;
     public RemoteConnectionImpl(String url, Properties info) {
+        System.out.println("RemoteConnectionImpl Constructor");
+        String plain_url = url.replaceAll(Constants.URL_PREFIX,"");
+        this.channel = new ClientChannel(plain_url,info);
+        System.out.println("channle is null"+   (channel == null));
     }
 
     /**
@@ -48,7 +58,8 @@ public class RemoteConnectionImpl implements java.sql.Connection{
      */
     @Override
     public Statement createStatement() throws SQLException {
-        return null;
+        System.out.println("RemoteConnectionImpl createStatement");
+        return new DefaultStatemntImpl(channel);
     }
 
     /**

@@ -16,4 +16,6 @@ public interface ResultRow {
     void put(Object[] o) throws InterruptedException;
 
     void putAll(Object[][] objects) throws InterruptedException;
+
+    int size();
 }

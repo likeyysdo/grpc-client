@@ -1,5 +1,6 @@
 package com.byco.remotejdbc.decode.statement;
 
+import com.byco.remotejdbc.decode.DefaultResultSetImpl;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +14,12 @@ import java.sql.Statement;
  * @Created by byco
  */
 public class DefaultStatemntImpl implements java.sql.Statement{
+    ClientChannel channel;
+
+    public DefaultStatemntImpl(ClientChannel c) {
+        this.channel = c;
+    }
+
     /**
      * Executes the given SQL statement, which returns a single
      * <code>ResultSet</code> object.
@@ -36,7 +43,7 @@ public class DefaultStatemntImpl implements java.sql.Statement{
      */
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        return null;
+        return new DefaultResultSetImpl(channel,sql);
     }
 
     /**

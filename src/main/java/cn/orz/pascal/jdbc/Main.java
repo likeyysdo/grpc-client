@@ -14,7 +14,7 @@ public class Main {
 
         Class.forName("cn.orz.pascal.jdbc.MyDriver");
         try (var con = DriverManager.getConnection(url); var st = con.createStatement()) {
-            st.execute("INSERT DUMMY SQL");
+            //st.execute("INSERT DUMMY SQL");
             try (var rs = st.executeQuery("SELECT DUMMY SQL")) {
                 while (rs.next()) {
                     System.out.println("rs[1]=" + rs.getString(1));

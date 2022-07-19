@@ -2,6 +2,8 @@ package com.byco.remotejdbc.decode;
 
 import com.byco.remotejdbc.constant.ValueConstants;
 import com.byco.remotejdbc.decode.resultrow.ResultRow;
+import com.byco.remotejdbc.decode.statement.ClientChannel;
+import com.byco.remotejdbc.decode.statement.ClientStub;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -22,7 +24,7 @@ import java.util.HashMap;
  */
 public class DefaultResultSetImpl extends AbstractDefaultResultSet {
 
-    private ResultRow resultRow;
+
     private Object[] currentRow;
     private ResultSetMetaData metaData;
     private   HashMap<String,Integer> nameFieldMap;
@@ -30,16 +32,12 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
     private int fetchSize ;
     private boolean closed;
 
-    public DefaultResultSetImpl(ResultRow resultRow, Object[] currentRow,
-                                ResultSetMetaData metaData,
-                                HashMap<String, Integer> nameFieldMap,
-                                HashMap<String, Integer> labelFieldMap) throws SQLException {
-        this.resultRow = resultRow;
-        this.currentRow = currentRow;
-        this.metaData = metaData;
-        this.nameFieldMap = nameFieldMap;
-        this.labelFieldMap = labelFieldMap;
+    private ClientStub stub;
 
+    public DefaultResultSetImpl(ClientChannel channel, String sql) throws SQLException {
+        stub = channel.getStub();
+        stub.query(sql);
+        this.metaData = stub.getMetaData();
         int count = metaData.getColumnCount();
         nameFieldMap = new HashMap<>(count);
         labelFieldMap = new HashMap<>(count);
@@ -93,8 +91,8 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
      */
     @Override
     public boolean next() throws SQLException {
-        if( resultRow.hasNext() ){
-            currentRow = resultRow.get();
+        if( stub.hasNext() ){
+            currentRow = stub.get();
             return true;
         }else{
             return false;

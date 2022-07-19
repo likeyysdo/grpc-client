@@ -3,14 +3,11 @@ package com.byco.remotejdbc.decode.statement;
 import com.byco.remotejdbc.decode.ResultRowDecodeFactory;
 import com.byco.remotejdbc.decode.resultrow.DefaultResultRow;
 import com.byco.remotejdbc.decode.resultrow.ResultRow;
-
 import com.byco.remotejdbc.metadata.DefaultResultSetMetaDataDecoder;
 import com.google.common.base.Strings;
-
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-
 import io.grpc.stub.StreamObserver;
 import io.quarkus.remote.ClientStatus;
 import io.quarkus.remote.ServerStatus;
@@ -26,13 +23,39 @@ import java.util.Properties;
 import java.util.concurrent.Semaphore;
 
 /**
- * @Classname QuerrySession
+ * @Classname ClientChannel
  * @Description TODO
- * @Date 2022/7/14 13:23
+ * @Date 2022/7/19 16:33
  * @Created by byco
  */
-public class ClientSession {
+public class ClientChannel {
+    private static final int DEFAULT_BUFFER_CAPACITY = 500;
+
     private String url;
+    private Properties properties;
+
+    public ClientChannel(String url, Properties properties) {
+        if(Strings.isNullOrEmpty(url)) throw new IllegalArgumentException("url is empty");
+        this.url = url;
+        this.properties = properties;
+        int bufferCapacity = 0;
+        if( bufferCapacity == 0 ) this.bufferCapacity = DEFAULT_BUFFER_CAPACITY;
+        channel =  ManagedChannelBuilder.forTarget(url)
+            .usePlaintext()
+            .build();
+    }
+
+    public ClientStub getStub(){
+        return new ClientStub(this );
+    }
+
+    ManagedChannel getChannel() {
+        return channel;
+    }
+
+    public int getBufferCapacity() {
+        return bufferCapacity;
+    }
 
     private ManagedChannel channel;
     private SimpleStatementGrpc.SimpleStatementStub stub;
@@ -45,7 +68,7 @@ public class ClientSession {
     private boolean canceled;
     private boolean closed;
     private boolean initialized;
-    private Properties properties;
+
 
     private int bufferCapacity;
 
@@ -60,6 +83,10 @@ public class ClientSession {
     private ResultSetMetaData metaData;
     private ResultRowDecodeFactory decodeFactory;
     private boolean remoteHasNext;
+
+    private ClientChannel() {
+
+    }
 
     public void connect(){
         channel =  ManagedChannelBuilder.forTarget(url)
@@ -79,44 +106,6 @@ public class ClientSession {
     }
 
 
-
-    public static void main(String[] args) {
-        ClientSession  session = new  ClientSession.Builder()
-            .setUrl("localhost:9000")
-            .setBufferCapacity(600).build();
-        session.queryBody = "SELECT * from film";
-        session.connect();
-        session.requestInitialize();
-        session.requestSendStatement();
-        //session.requestReceiveData();
-//        System.out.println(session.hasNext());
-//        System.out.println(Arrays.toString(session.get()));
-        while(session.hasNext()){
-            System.out.println(Arrays.toString(session.get()));
-        }
-//        session.requestFinish();
-//        session.requestObserver.onCompleted();
-
-
-//        session = new  ClientSession.Builder()
-//            .setUrl("localhost:9000")
-//            .setBufferCapacity(600).build();
-        session.queryBody = "SELECT * from actor";
-        //session.connect();
-        session.semaphore = new Semaphore(1);
-        session.remoteHasNext = true;
-        //session.requestInitialize();
-        session.requestSendStatement();
-        //session.requestReceiveData();
-//        System.out.println(session.hasNext());
-//        System.out.println(Arrays.toString(session.get()));
-        while(session.hasNext()){
-            System.out.println(Arrays.toString(session.get()));
-        }
-        session.requestFinish();
-        session.requestObserver.onCompleted();
-
-    }
 
 
     void acquire(){
@@ -257,20 +246,20 @@ public class ClientSession {
     private void doAction( SimpleStatementResponse response ) {
         this.response = response;
         ServerStatus action = response.getStatus();
-       try{
-        switch (action){
-            case SERVER_STATUS_UNKNOWN: responseUnknown(); break;
-            case SERVER_STATUS_INITIALIZED: responseInitialized();break;
-            case SERVER_STATUS_FINISHED: responseFinished();break;
-            case SERVER_STATUS_ERROR: responseError();break;
-            case SERVER_STATUS_RECEIVED_STATEMENT: responseReceivedStatement();break;
-            case SERVER_STATUS_HAS_NEXT_DATA: responseHasNextData();break;
-            case SERVER_STATUS_NOT_HAS_NEXT_DATA: responseNotHasNextData();break;
-            case SERVER_STATUS_CANCELED: responseCanceled();break;
-        }
-       }catch ( SQLException | IOException | InterruptedException e){
+        try{
+            switch (action){
+                case SERVER_STATUS_UNKNOWN: responseUnknown(); break;
+                case SERVER_STATUS_INITIALIZED: responseInitialized();break;
+                case SERVER_STATUS_FINISHED: responseFinished();break;
+                case SERVER_STATUS_ERROR: responseError();break;
+                case SERVER_STATUS_RECEIVED_STATEMENT: responseReceivedStatement();break;
+                case SERVER_STATUS_HAS_NEXT_DATA: responseHasNextData();break;
+                case SERVER_STATUS_NOT_HAS_NEXT_DATA: responseNotHasNextData();break;
+                case SERVER_STATUS_CANCELED: responseCanceled();break;
+            }
+        }catch ( SQLException | IOException | InterruptedException e){
             throw new RuntimeException(e);
-       }
+        }
 
     }
 
@@ -301,55 +290,7 @@ public class ClientSession {
 
 
 
-    private ClientSession(){
-
-    }
 
 
 
-
-    public static class Builder{
-
-        private static final int DEFAULT_BUFFER_CAPACITY = 500;
-
-        private String url;
-        private int bufferCapacity;
-        private Properties properties;
-        private ResultRow resultRow;
-        public Builder(){
-
-        }
-
-        public Builder setUrl(String url) {
-            this.url = url;
-            return this;
-        }
-
-        public Builder setBufferCapacity(int bufferCapacity) {
-            this.bufferCapacity = bufferCapacity;
-            return this;
-        }
-
-        public Builder setProperties(Properties properties) {
-            this.properties = properties;
-            return this;
-        }
-
-        public void check(){
-            if(Strings.isNullOrEmpty(url)) throw new IllegalArgumentException("url is empty");
-        }
-
-        public ClientSession build(){
-            if( bufferCapacity == 0 ) bufferCapacity = DEFAULT_BUFFER_CAPACITY;
-            if( resultRow == null ) {
-                resultRow = new DefaultResultRow(bufferCapacity);
-            }
-            ClientSession session = new ClientSession();
-            session.properties = this.properties;
-            session.url = this.url;
-            session.bufferCapacity = this.bufferCapacity;
-            session.buffer = resultRow;
-            return session;
-        }
-    }
 }

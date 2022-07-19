@@ -1,5 +1,7 @@
 package com.byco.remotejdbc;
 
+import com.byco.remotejdbc.decode.statement.ClientChannel;
+import com.byco.remotejdbc.decode.statement.ClientStub;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +15,11 @@ import java.sql.Statement;
  * @Created by byco
  */
 public class RemoteStatementImpl implements  java.sql.Statement{
+    ClientStub stub;
+    public RemoteStatementImpl(ClientChannel channel) {
+        stub = channel.getStub();
+    }
+
     /**
      * Executes the given SQL statement, which returns a single
      * <code>ResultSet</code> object.
@@ -36,7 +43,7 @@ public class RemoteStatementImpl implements  java.sql.Statement{
      */
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        return null;
+        return new RemoteResultSet(stub);
     }
 
     /**
