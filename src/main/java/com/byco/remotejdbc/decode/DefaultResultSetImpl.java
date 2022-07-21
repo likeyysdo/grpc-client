@@ -1,9 +1,11 @@
 package com.byco.remotejdbc.decode;
 
+import com.byco.remotejdbc.RemoteConnectionImpl;
 import com.byco.remotejdbc.constant.ValueConstants;
 import com.byco.remotejdbc.decode.resultrow.ResultRow;
 import com.byco.remotejdbc.decode.statement.ClientChannel;
 import com.byco.remotejdbc.decode.statement.ClientStub;
+import com.byco.remotejdbc.utils.Log;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -23,7 +25,7 @@ import java.util.HashMap;
  * @Created by byco
  */
 public class DefaultResultSetImpl extends AbstractDefaultResultSet {
-
+    private static final Log log = new Log(DefaultResultSetImpl.class);
 
     private Object[] currentRow;
     private ResultSetMetaData metaData;
@@ -32,9 +34,14 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
     private int fetchSize ;
     private boolean closed;
 
+    public ClientStub getStub() {
+        return stub;
+    }
+
     private ClientStub stub;
 
     public DefaultResultSetImpl(ClientChannel channel, String sql) throws SQLException {
+        log.debug("new ResultSet");
         stub = channel.getStub();
         stub.query(sql);
         this.metaData = stub.getMetaData();
@@ -127,7 +134,7 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
      */
     @Override
     public void close() throws SQLException {
-
+        stub.close();
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.byco.remotejdbc;
 
 import com.byco.remotejdbc.constant.Constants;
+import com.byco.remotejdbc.utils.Log;
+import java.nio.channels.UnsupportedAddressTypeException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
@@ -15,7 +17,7 @@ import java.util.logging.Logger;
  * @Date 2022/6/28 17:50
  * @Created by byco
  */
-public class Driver implements  java.sql.Driver{
+public class Driver implements java.sql.Driver {
 
     static {
         try {
@@ -29,17 +31,24 @@ public class Driver implements  java.sql.Driver{
         var url = "jdbc:remotejdbc://localhost:9000";
 
         Class.forName("com.byco.remotejdbc.Driver");
-        try (var con = DriverManager.getConnection(url); var st = con.createStatement()) {
-            try (var rs = st.executeQuery("SELECT * from film")) {
-                int  c = rs.getMetaData().getColumnCount();
+        Properties properties = new Properties();
+        properties.put("fetchSize", "4000");
+        properties.put("logLevel","debug");
+        try (var con = DriverManager.getConnection(url, properties)
+             ; var st = con.createStatement()
+        ) {
+            try (var rs = st.executeQuery("SELECT * FROM financialpostingline limit 50")) {
+                int c = rs.getMetaData().getColumnCount();
+                System.out.println("getColumnCount " + c);
                 while (rs.next()) {
-                    for( int i = 1 ; i <= c ;i++){
+                    for (int i = 1; i <= c; i++) {
                         System.out.print(rs.getString(i));
                         System.out.print(", ");
                     }
                     System.out.println();
                 }
             }
+
         }
     }
 
@@ -76,7 +85,7 @@ public class Driver implements  java.sql.Driver{
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
 
-        return new RemoteConnectionImpl(url,info) ;
+        return new RemoteConnectionImpl(url, info);
     }
 
     /**

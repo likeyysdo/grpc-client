@@ -1,23 +1,34 @@
-package com.byco.remotejdbc;
+package com.byco.remotejdbc.decode.statement;
 
-import com.byco.remotejdbc.decode.statement.ClientChannel;
-import com.byco.remotejdbc.decode.statement.ClientStub;
+import com.byco.remotejdbc.decode.DefaultResultSetImpl;
+import com.byco.remotejdbc.utils.Log;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.SQLTimeoutException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+import java.util.HashSet;
 
 /**
- * @Classname RemoteStatementImpl
+ * @Classname DefaultStatemntImpl
  * @Description TODO
- * @Date 2022/6/30 16:17
+ * @Date 2022/7/14 10:13
  * @Created by byco
  */
-public class RemoteStatementImpl implements  java.sql.Statement{
-    ClientStub stub;
-    public RemoteStatementImpl(ClientChannel channel) {
-        stub = channel.getStub();
+public class DefaultStatementImpl implements java.sql.Statement{
+
+    private static final Log log = new Log(DefaultStatementImpl.class);
+
+    ClientChannel channel;
+    HashSet<DefaultResultSetImpl> resultSets;
+    private boolean closed;
+    public DefaultStatementImpl(ClientChannel c) {
+        log.debug("new Statement");
+        this.channel = c;
+        resultSets = new HashSet<>();
+        closed = false;
     }
 
     /**
@@ -43,7 +54,10 @@ public class RemoteStatementImpl implements  java.sql.Statement{
      */
     @Override
     public ResultSet executeQuery(String sql) throws SQLException {
-        return new RemoteResultSet(stub);
+        log.debug("executeQuery " + sql);
+        DefaultResultSetImpl resultSet= new DefaultResultSetImpl(channel,sql);
+        resultSets.add(resultSet);
+        return resultSet;
     }
 
     /**
@@ -92,7 +106,12 @@ public class RemoteStatementImpl implements  java.sql.Statement{
      */
     @Override
     public void close() throws SQLException {
-
+        if( closed ) return;
+        log.debug("DefaultStatementImpl close");
+        for( ResultSet resultSet : resultSets ){
+            resultSet.close();
+        }
+        closed = true;
     }
 
     /**
@@ -264,7 +283,10 @@ public class RemoteStatementImpl implements  java.sql.Statement{
      */
     @Override
     public void cancel() throws SQLException {
-
+        log.debug("DefaultStatementImpl cancel");
+        for( DefaultResultSetImpl resultSet : resultSets ){
+            resultSet.getStub().cancel();
+        }
     }
 
     /**
@@ -938,7 +960,7 @@ public class RemoteStatementImpl implements  java.sql.Statement{
      */
     @Override
     public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-        return false;
+        throw new SQLFeatureNotSupportedException();
     }
 
     /**
@@ -991,7 +1013,7 @@ public class RemoteStatementImpl implements  java.sql.Statement{
      */
     @Override
     public boolean execute(String sql, String[] columnNames) throws SQLException {
-        return false;
+        throw new SQLFeatureNotSupportedException();
     }
 
     /**
@@ -1019,7 +1041,7 @@ public class RemoteStatementImpl implements  java.sql.Statement{
      */
     @Override
     public boolean isClosed() throws SQLException {
-        return false;
+        return closed;
     }
 
     /**

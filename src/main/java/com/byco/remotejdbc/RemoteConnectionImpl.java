@@ -2,8 +2,9 @@ package com.byco.remotejdbc;
 
 import com.byco.remotejdbc.constant.Constants;
 import com.byco.remotejdbc.decode.statement.ClientChannel;
-import com.byco.remotejdbc.decode.statement.ClientSession;
-import com.byco.remotejdbc.decode.statement.DefaultStatemntImpl;
+import com.byco.remotejdbc.decode.statement.DefaultStatementImpl;
+import com.byco.remotejdbc.utils.Log;
+import java.io.Closeable;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -11,8 +12,10 @@ import java.sql.Clob;
 import java.sql.DatabaseMetaData;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Savepoint;
@@ -28,14 +31,17 @@ import java.util.concurrent.Executor;
  * @Date 2022/6/30 15:10
  * @Created by byco
  */
-public class RemoteConnectionImpl implements java.sql.Connection{
+public class RemoteConnectionImpl implements java.sql.Connection   {
+
+    private static final Log log = new Log(RemoteConnectionImpl.class);
 
     private ClientChannel channel;
+    private DatabaseMetaData databaseMetaData;
     public RemoteConnectionImpl(String url, Properties info) {
-        System.out.println("RemoteConnectionImpl Constructor");
+        log.debug("new Connection");
         String plain_url = url.replaceAll(Constants.URL_PREFIX,"");
         this.channel = new ClientChannel(plain_url,info);
-        System.out.println("channle is null"+   (channel == null));
+        this.databaseMetaData = new DefaultDatabaseMetaDataIml(url);
     }
 
     /**
@@ -58,8 +64,8 @@ public class RemoteConnectionImpl implements java.sql.Connection{
      */
     @Override
     public Statement createStatement() throws SQLException {
-        System.out.println("RemoteConnectionImpl createStatement");
-        return new DefaultStatemntImpl(channel);
+        log.debug("Connection createStatement");
+        return new DefaultStatementImpl(channel);
     }
 
     /**
@@ -257,7 +263,8 @@ public class RemoteConnectionImpl implements java.sql.Connection{
      */
     @Override
     public void close() throws SQLException {
-
+        log.debug("Connection closing");
+        channel.close();
     }
 
     /**
@@ -279,7 +286,7 @@ public class RemoteConnectionImpl implements java.sql.Connection{
      */
     @Override
     public boolean isClosed() throws SQLException {
-        return false;
+        return channel.isClosed();
     }
 
     /**
@@ -297,7 +304,7 @@ public class RemoteConnectionImpl implements java.sql.Connection{
      */
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-        return null;
+        return this.databaseMetaData;
     }
 
     /**
@@ -328,7 +335,7 @@ public class RemoteConnectionImpl implements java.sql.Connection{
      */
     @Override
     public boolean isReadOnly() throws SQLException {
-        return false;
+        return true;
     }
 
     /**
@@ -489,7 +496,7 @@ public class RemoteConnectionImpl implements java.sql.Connection{
     @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency)
         throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     /**
@@ -649,7 +656,7 @@ public class RemoteConnectionImpl implements java.sql.Connection{
      */
     @Override
     public void setHoldability(int holdability) throws SQLException {
-
+        throw new SQLFeatureNotSupportedException();
     }
 
     /**
@@ -798,7 +805,7 @@ public class RemoteConnectionImpl implements java.sql.Connection{
     @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency,
                                      int resultSetHoldability) throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     /**
@@ -844,7 +851,7 @@ public class RemoteConnectionImpl implements java.sql.Connection{
     public PreparedStatement prepareStatement(String sql, int resultSetType,
                                               int resultSetConcurrency, int resultSetHoldability)
         throws SQLException {
-        return null;
+        throw new SQLFeatureNotSupportedException();
     }
 
     /**
