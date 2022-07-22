@@ -84,7 +84,6 @@ public class Driver implements java.sql.Driver {
      */
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-
         return new RemoteConnectionImpl(url, info);
     }
 

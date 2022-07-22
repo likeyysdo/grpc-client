@@ -1,5 +1,6 @@
 package com.byco.remotejdbc;
 
+import com.byco.remotejdbc.constant.Constants;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
@@ -145,7 +146,7 @@ public class DefaultDatabaseMetaDataIml implements java.sql.DatabaseMetaData{
      */
     @Override
     public String getDatabaseProductName() throws SQLException {
-        return "RSQL";
+        return Constants.DATABASE_PRODUCT_NAME;
     }
 
     /**
@@ -156,7 +157,7 @@ public class DefaultDatabaseMetaDataIml implements java.sql.DatabaseMetaData{
      */
     @Override
     public String getDatabaseProductVersion() throws SQLException {
-        return "1.1";
+        return Constants.DATABASE_PRODUCT_VERSION;
     }
 
     /**
@@ -167,7 +168,7 @@ public class DefaultDatabaseMetaDataIml implements java.sql.DatabaseMetaData{
      */
     @Override
     public String getDriverName() throws SQLException {
-        return "RSQL jdbc type3";
+        return Constants.DRIVER_NAME;
     }
 
     /**
@@ -178,7 +179,7 @@ public class DefaultDatabaseMetaDataIml implements java.sql.DatabaseMetaData{
      */
     @Override
     public String getDriverVersion() throws SQLException {
-        return "0.18";
+        return Constants.DRIVER_VERSION;
     }
 
     /**

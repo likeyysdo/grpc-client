@@ -46,7 +46,7 @@ public class ClientChannel {
     private String url;
     private Properties properties;
     private ConcurrentHashMap<ClientStub,String> stubSet;
-
+    private String encodeProperties;
 
     private ManagedChannel channel;
 
@@ -67,6 +67,10 @@ public class ClientChannel {
             .usePlaintext()
             .build();
         stubSet = new ConcurrentHashMap<>();
+    }
+
+    void propertiesEncode(){
+
     }
 
     void propertiesInitialize(){
