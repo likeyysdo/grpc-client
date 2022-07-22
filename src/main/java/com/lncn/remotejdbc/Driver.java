@@ -31,7 +31,7 @@ public class Driver implements java.sql.Driver {
         Class.forName("com.lncn.remotejdbc.Driver");
         Properties properties = new Properties();
         properties.put("fetchSize", "4000");
-        //properties.put("logLevel","debug");
+        properties.put("logLevel","debug");
         try (var con = DriverManager.getConnection(url, properties)
              ; var st = con.createStatement()
         ) {

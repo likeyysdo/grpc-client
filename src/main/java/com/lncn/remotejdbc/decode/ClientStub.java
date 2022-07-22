@@ -4,6 +4,7 @@ import com.lncn.remotejdbc.decode.resultset.resultrow.ResultRowDecodeFactory;
 import com.lncn.remotejdbc.decode.resultset.resultrow.DefaultResultRow;
 import com.lncn.remotejdbc.decode.resultset.resultrow.ResultRow;
 import com.lncn.remotejdbc.decode.resultset.metadata.DefaultResultSetMetaDataDecoder;
+import com.lncn.remotejdbc.utils.CodeUtils;
 import com.lncn.remotejdbc.utils.Log;
 import com.google.protobuf.ByteString;
 import io.grpc.ManagedChannel;
@@ -114,7 +115,7 @@ public class ClientStub {
     }
 
     public void query(String queryBody) throws SQLException {
-        log.debug("ClientStub start query",queryBody);
+        log.debug("ClientStub start query ",queryBody);
         this.queryBody = queryBody;
         awaitResponse();
         requestSendStatement();
@@ -199,7 +200,7 @@ public class ClientStub {
         log.debug("send SendStatement",ClientStatus.CLIENT_STATUS_SEND_STATEMENT );
         SimpleStatementRequest request = SimpleStatementRequest.newBuilder()
             .setStatus(ClientStatus.CLIENT_STATUS_SEND_STATEMENT)
-            .setBody(queryBody)
+            .setBody(CodeUtils.encodeText(queryBody))
             .build();
         acquire();
         requestObserver.onNext(request);

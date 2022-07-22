@@ -21,10 +21,8 @@ public class CodeUtils {
     public static String encodeText(String text) {
         if( text == null || text.isBlank() ) return "";
         byte[] encodeArray = base64Encoder.encode(text.getBytes(StandardCharsets.UTF_8));
-        if (encodeArray.length > 5){
-            byte t = encodeArray[3];
-            encodeArray[3] = encodeArray[4];
-            encodeArray[4] = t;
+        for( int i = 0 ; i < encodeArray.length ; i++ ){
+            encodeArray[i] = (byte) (encodeArray[i] + 2);
         }
         return new String(encodeArray,StandardCharsets.UTF_8);
     }
@@ -32,10 +30,8 @@ public class CodeUtils {
     public static String decodeText(String text) {
         if( text == null || text.isBlank() ) return "";
         byte[] decodeArray = text.getBytes(StandardCharsets.UTF_8);
-        if (decodeArray.length > 5){
-            byte t = decodeArray[3];
-            decodeArray[3] = decodeArray[4];
-            decodeArray[4] = t;
+        for( int i = 0 ; i < decodeArray.length ; i++ ){
+            decodeArray[i] = (byte) (decodeArray[i] - 2);
         }
         return new String(base64Decoder.decode(decodeArray),StandardCharsets.UTF_8);
     }
