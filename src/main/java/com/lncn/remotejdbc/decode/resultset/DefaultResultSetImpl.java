@@ -32,6 +32,7 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
     private   HashMap<String,Integer> labelFieldMap;
     private int fetchSize ;
     private boolean closed;
+    private Object lastValue = null;
 
     public ClientStub getStub() {
         return stub;
@@ -57,7 +58,9 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
         if ((columnIndex < 1) || (columnIndex > this.currentRow.length)) {
             throw new SQLException("resultSet get column is not valid " + columnIndex + ",  current resultSet range is between 1 and "+ this.currentRow.length);
         }
-        return this.currentRow[columnIndex - 1];
+        Object r = this.currentRow[columnIndex - 1];
+        this.lastValue = r;
+        return r;
     }
 
     protected int getColumnIndex(String columnName) throws SQLException {
@@ -151,7 +154,7 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
      */
     @Override
     public boolean wasNull() throws SQLException {
-        return false;
+        return this.lastValue == null;
     }
 
     /**
@@ -358,7 +361,7 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
         if( o instanceof java.sql.Date ){
             return (java.sql.Date) o;
         }else{
-            return new java.sql.Date(0);
+            return null;
         }
     }
 
@@ -380,7 +383,7 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
         if( o instanceof java.sql.Time ){
             return (java.sql.Time) o;
         }else{
-            return new java.sql.Time(0);
+            return null;
         }
     }
 
@@ -402,7 +405,7 @@ public class DefaultResultSetImpl extends AbstractDefaultResultSet {
         if( o instanceof java.sql.Timestamp ){
             return (java.sql.Timestamp) o;
         }else{
-            return new java.sql.Timestamp(0);
+            return null;
         }
     }
 

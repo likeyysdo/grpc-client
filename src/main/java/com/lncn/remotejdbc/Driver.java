@@ -42,7 +42,7 @@ public class Driver implements java.sql.Driver {
             System.out.println(con.getMetaData().getURL());
             // mydatetime financialpostingline
             //SELECT * FROM financialpostingline limit 50
-            try (var rs = st.executeQuery("SELECT * FROM financialpostingline limit 50")) {
+            try (var rs = st.executeQuery("SELECT * FROM elementattribute limit 50")) {
                 int c = rs.getMetaData().getColumnCount();
                 System.out.println("getColumnCount " + c);
                 while (rs.next()) {

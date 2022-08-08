@@ -14,7 +14,7 @@ import java.util.HashMap;
 public class DefaultResultRowEncoder implements ResultRowEncoder {
     private static final int DOUBLE_SCALE = 1000_000;
 
-    private static final HashMap<Integer, ResultRowEncodeConsumer<Integer, ResultSet, CodedOutputStream>>
+    protected static final HashMap<Integer, ResultRowEncodeConsumer<Integer, ResultSet, CodedOutputStream>>
         directEncodeMap;
     private static final ResultRowEncodeConsumer<Integer, ResultSet, CodedOutputStream> encodeInteger;
     private static final ResultRowEncodeConsumer<Integer, ResultSet, CodedOutputStream> encodeLong;

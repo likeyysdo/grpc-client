@@ -17,7 +17,7 @@ import java.util.HashMap;
  */
 public class DefaultResultRowDecoder implements ResultRowDecoder {
     private static final int DOUBLE_SCALE = 1000_000;
-    private static final HashMap<Integer, ResultRowDecodeFunction>
+    protected static final HashMap<Integer, ResultRowDecodeFunction>
         directDecodeMap;
     private static final ResultRowDecodeFunction<CodedInputStream, Integer> decodeInteger;
     private static final ResultRowDecodeFunction<CodedInputStream, Long> decodeLong;
@@ -136,7 +136,7 @@ public class DefaultResultRowDecoder implements ResultRowDecoder {
         directDecodeMap.put(RemoteType.LONGNVARCHAR.jdbcType, DefaultResultRowDecoder.decodeString);
     }
 
-    private final HashMap<Integer, ResultRowDecodeFunction> externalBigDecimalMap;
+    protected final HashMap<Integer, ResultRowDecodeFunction> externalBigDecimalMap;
 
     public DefaultResultRowDecoder() {
         this.externalBigDecimalMap = new HashMap<>();
