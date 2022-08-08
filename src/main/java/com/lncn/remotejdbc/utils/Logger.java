@@ -1,6 +1,11 @@
 package com.lncn.remotejdbc.utils;
 
+import com.lncn.remotejdbc.constant.Constants;
 import java.util.Calendar;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.LoggerFactory;
 
 /**
  * @Classname Log
@@ -8,12 +13,21 @@ import java.util.Calendar;
  * @Date 2022/7/20 11:47
  * @Created by byco
  */
-public class Log {
+public class Logger {
+    private final static org.slf4j.Logger log = LoggerFactory.getLogger(Constants.DATABASE_PRODUCT_NAME);
 
-    private static final String LOG_LEVEL_ERROR = "ERROR";
-    private static final String LOG_LEVEL_WARN = "WARN";
-    private static final String LOG_LEVEL_INFO = "INFO";
-    private static final String LOG_LEVEL_DEBUG = "DEBUG";
+
+
+    private static boolean simpleLog = false;
+
+    public static boolean isSimpleLog() {
+        return simpleLog;
+    }
+
+    public static void setSimpleLog(boolean simpleLog) {
+        Logger.simpleLog = simpleLog;
+    }
+
 
     public enum LogLevel{
         OFF
@@ -30,11 +44,10 @@ public class Log {
     }
 
 
-
     private static LogLevel globaLogLevel = LogLevel.ERROR;
     private final Class aClass;
     private final String className;
-    private final Calendar calendar;
+
 
     public static void setGlobalLogLevel(LogLevel level){
         globaLogLevel = level;
@@ -44,13 +57,15 @@ public class Log {
         return globaLogLevel;
     }
 
-    public Log(Class aClass) {
+    Logger(Class aClass) {
         this.aClass = aClass;
         this.className = " [" + aClass.getName() + "] ";
-        calendar = Calendar.getInstance();
     }
 
+
+
     private StringBuilder getTimeHead(){
+        Calendar calendar = Calendar.getInstance();
         StringBuilder sb = new StringBuilder(30);
         sb.append(calendar.get(Calendar.YEAR) )
             .append("-")
@@ -102,19 +117,43 @@ public class Log {
 
 
      void printElements(LogLevel type, Object ... elements ){
-        if(isSkippedLogLevel(type))return;
-         StringBuilder sb = getTimeHead();
-         sb.append(" ")
-             .append(type.name())
-             .append(this.className)
-             .append("(")
-             .append(Thread.currentThread().getName())
-             .append(") ")
-         ;
-         for( Object o : elements ){
-             sb.append(o).append(" ");
+         if( simpleLog ){
+             printElementsRaw(type, elements);
+         }else{
+             printElementsWithLogger(type, elements);
          }
-         System.out.println(sb.toString());
+    }
+
+    void printElementsWithLogger(LogLevel type, Object ... elements ){
+        if(isSkippedLogLevel(type))return;
+        StringBuilder sb = new StringBuilder()
+            .append(this.className);
+        for( Object o : elements ){
+            sb.append(o).append(" ");
+        }
+        switch(type){
+            case DEBUG: log.debug(sb.toString());break;
+            case INFO: log.info(sb.toString());break;
+            case WARN: log.warn(sb.toString());break;
+            case ERROR: log.error(sb.toString());break;
+            default:log.debug(sb.toString());
+        }
+    }
+
+    void printElementsRaw(LogLevel type, Object ... elements ){
+        if(isSkippedLogLevel(type))return;
+        StringBuilder sb = getTimeHead();
+        sb.append(" ")
+            .append(type.name())
+            .append(this.className)
+            .append("(")
+            .append(Thread.currentThread().getName())
+            .append(") ")
+        ;
+        for( Object o : elements ){
+            sb.append(o).append(" ");
+        }
+        System.out.println(sb.toString());
     }
 
 }

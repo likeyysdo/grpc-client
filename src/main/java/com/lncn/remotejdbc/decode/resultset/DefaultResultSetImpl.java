@@ -3,7 +3,8 @@ package com.lncn.remotejdbc.decode.resultset;
 import com.lncn.remotejdbc.constant.ValueConstants;
 import com.lncn.remotejdbc.decode.ClientChannel;
 import com.lncn.remotejdbc.decode.ClientStub;
-import com.lncn.remotejdbc.utils.Log;
+import com.lncn.remotejdbc.utils.Logger;
+import com.lncn.remotejdbc.utils.LoggerFactory;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.sql.Date;
@@ -23,7 +24,7 @@ import java.util.HashMap;
  * @Created by byco
  */
 public class DefaultResultSetImpl extends AbstractDefaultResultSet {
-    private static final Log log = new Log(DefaultResultSetImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultResultSetImpl.class);
 
     private Object[] currentRow;
     private ResultSetMetaData metaData;

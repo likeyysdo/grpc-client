@@ -7,6 +7,7 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Logger;
 
 /**
@@ -26,15 +27,21 @@ public class Driver implements java.sql.Driver {
     }
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        var url = "jdbc:rsql://localhost:9000";
+        var url = "jdbc:rsql://localhost:9000?fetchSize=1000&&";
 
         Class.forName("com.lncn.remotejdbc.Driver");
         Properties properties = new Properties();
-        properties.put("fetchSize", "4000");
-        properties.put("logLevel","debug");
+        //properties.put("enableCache", "true");
+        //properties.put("fetchSize", "4000");
+        properties.put("logLevel","info");
+        properties.put("timeOut","10");
+
         try (var con = DriverManager.getConnection(url, properties)
              ; var st = con.createStatement()
         ) {
+            System.out.println(con.getMetaData().getURL());
+            // mydatetime financialpostingline
+            //SELECT * FROM financialpostingline limit 50
             try (var rs = st.executeQuery("SELECT * FROM financialpostingline limit 50")) {
                 int c = rs.getMetaData().getColumnCount();
                 System.out.println("getColumnCount " + c);

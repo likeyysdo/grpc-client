@@ -1,7 +1,8 @@
 package com.lncn.remotejdbc.decode;
 
 import com.lncn.remotejdbc.decode.resultset.DefaultResultSetImpl;
-import com.lncn.remotejdbc.utils.Log;
+import com.lncn.remotejdbc.utils.Logger;
+import com.lncn.remotejdbc.utils.LoggerFactory;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +20,7 @@ import java.util.HashSet;
  */
 public class DefaultStatementImpl implements java.sql.Statement{
 
-    private static final Log log = new Log(DefaultStatementImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultStatementImpl.class);
 
     ClientChannel channel;
     HashSet<DefaultResultSetImpl> resultSets;

@@ -1,8 +1,9 @@
 package com.lncn.remotejdbc.decode;
 
 import com.lncn.remotejdbc.utils.CodeUtils;
-import com.lncn.remotejdbc.utils.Log;
+import com.lncn.remotejdbc.utils.Logger;
 import com.google.common.base.Strings;
+import com.lncn.remotejdbc.utils.LoggerFactory;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import java.io.IOException;
@@ -20,9 +21,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class ClientChannel {
 
-    private static final Log log = new Log(ClientChannel.class);
+    private static final Logger log = LoggerFactory.getLogger(ClientChannel.class);
 
     private static final int DEFAULT_BUFFER_CAPACITY = 2000;
+    private static final int DEFAULT_TIMEOUT_SECONDS = 30;
 
     private String url;
     private Properties properties;
@@ -34,6 +36,7 @@ public class ClientChannel {
 
     private boolean closed;
     private int bufferCapacity;
+    private long timeOutSeconds;
 
     private ClientChannel() {
 
@@ -69,22 +72,23 @@ public class ClientChannel {
         propertiesEncode();
         initializeLogLevel();
         initializeFetchSize();
+        initializeTimeOut();
         log.debug("propertiesInitialize end");
     }
 
 
     void initializeLogLevel(){
-        log.debug("Initialize logLevel start ",Log.getGlobalLogLevel());
+        log.debug("Initialize logLevel start ", Logger.getGlobalLogLevel());
         String logLevelString =  getNotNullProperty("logLevel").toUpperCase();
         if( !isNotNullPropertyValue(logLevelString) ) return;
         try{
-            Log.LogLevel logLevel = Log.LogLevel.valueOf(logLevelString);
-            Log.setGlobalLogLevel(logLevel);
+            Logger.LogLevel logLevel = Logger.LogLevel.valueOf(logLevelString);
+            Logger.setGlobalLogLevel(logLevel);
         }catch (IllegalArgumentException e){
             throw new IllegalArgumentException("Wrong logLevel "+ logLevelString + " support log level: "
-            + Arrays.toString(Log.LogLevel.values()));
+            + Arrays.toString(Logger.LogLevel.values()));
         }
-        log.debug("Initialize logLevel end ",Log.getGlobalLogLevel());
+        log.debug("Initialize logLevel end ", Logger.getGlobalLogLevel());
     }
 
     void initializeFetchSize(){
@@ -95,6 +99,22 @@ public class ClientChannel {
         }
         this.bufferCapacity = bufferCapacity;
         log.debug("Initialize bufferCapacity",this.bufferCapacity);
+    }
+
+    void initializeTimeOut(){
+        String timeOutString =  getNotNullProperty("timeOut");
+        int timeOutSeconds = DEFAULT_TIMEOUT_SECONDS;
+        if( isNotNullPropertyValue(timeOutString) ){
+            timeOutSeconds = Integer.parseInt(timeOutString);
+        }
+        this.timeOutSeconds = timeOutSeconds;
+        log.debug("Initialize timeOutSeconds",this.timeOutSeconds);
+    }
+
+
+
+    public long getTimeOutSeconds() {
+        return timeOutSeconds;
     }
 
     boolean isNotNullPropertyValue(String property){
@@ -111,7 +131,7 @@ public class ClientChannel {
         }
     }
 
-    public ClientStub getStub(){
+    public ClientStub getStub() throws RJdbcSQLException {
         log.debug("ClientChannel getStub");
         ClientStub stub  = new ClientStub(this);
         stubSet.put(stub,"");

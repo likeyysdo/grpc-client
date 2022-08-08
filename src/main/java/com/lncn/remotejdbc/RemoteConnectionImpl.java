@@ -3,7 +3,8 @@ package com.lncn.remotejdbc;
 import com.lncn.remotejdbc.constant.Constants;
 import com.lncn.remotejdbc.decode.ClientChannel;
 import com.lncn.remotejdbc.decode.DefaultStatementImpl;
-import com.lncn.remotejdbc.utils.Log;
+import com.lncn.remotejdbc.utils.Logger;
+import com.lncn.remotejdbc.utils.LoggerFactory;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -32,15 +33,32 @@ import java.util.concurrent.Executor;
  */
 public class RemoteConnectionImpl implements java.sql.Connection   {
 
-    private static final Log log = new Log(RemoteConnectionImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(RemoteConnectionImpl.class);
 
     private ClientChannel channel;
     private DatabaseMetaData databaseMetaData;
     public RemoteConnectionImpl(String url, Properties info) throws SQLException {
         log.debug("new Connection");
         String plain_url = url.replaceAll(Constants.URL_PREFIX,"");
+        resolveUrlProperties(url, info);
         this.channel = new ClientChannel(plain_url,info);
         this.databaseMetaData = new DefaultDatabaseMetaDataIml(url);
+    }
+
+    private void resolveUrlProperties(String url, Properties info){
+        String[] p =url.substring(url.indexOf('?')+1).split("&");
+        for(String s : p){
+            int index = s.indexOf('=');
+            if( index <=0  ) continue;
+            String key = s.substring(0,index);
+            String value = s.substring(index+1);
+            if(  key.isBlank() ||  value.isBlank()){
+                return;
+            }
+            if( info.getProperty(key) == null || info.getProperty(key).isBlank() ){
+                info.put(key,value);
+            }
+        }
     }
 
     /**
@@ -1141,7 +1159,7 @@ public class RemoteConnectionImpl implements java.sql.Connection   {
      */
     @Override
     public boolean isValid(int timeout) throws SQLException {
-        return false;
+        return true;
     }
 
     /**

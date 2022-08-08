@@ -2,7 +2,9 @@ package com.lncn.remotejdbc.decode;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.google.type.DateTime;
 import java.math.BigDecimal;
+import java.util.Date;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -20,4 +22,13 @@ class DefaultResultRowDecoderTest {
         System.out.println(b);
     }
 
+    @Test
+    public void Time_Test(){
+        //Arrange
+        long today = new Date().getTime();
+        //Act
+        System.out.println(today);
+        System.out.println(new java.sql.Timestamp(today));
+        //Assert
+    }
 }

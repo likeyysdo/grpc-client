@@ -80,9 +80,31 @@ public class DefaultResultRowDecoder implements ResultRowDecoder {
         defaultBigDecimalList[7] =  decodeBigDecimal7Scale;
         defaultBigDecimalList[8] =  decodeBigDecimal8Scale;
 
-        decodeDate = (x) -> new java.sql.Date(x.readUInt64());
-        decodeTime = (x) -> new java.sql.Time(x.readUInt64());
-        decodeTimestamp = (x) -> new java.sql.Timestamp(x.readUInt64());
+        decodeDate = (x) -> {
+            long s = x.readUInt64();
+            if( s != 7L )  {
+                return new java.sql.Date(s);
+            }else{
+                return null;
+            }
+        };
+        decodeTime = (x) -> {
+            long s = x.readUInt64();
+            if( s != 7L )  {
+                return new java.sql.Time(s);
+            }else{
+                return null;
+            }
+        };
+        decodeTimestamp = (x) -> {
+            long s = x.readUInt64();
+            if( s != 7L )  {
+                return new java.sql.Timestamp(s);
+            }else{
+                return null;
+            }
+        };
+
         decodeByteArray = CodedInputStream::readByteArray;
 
         directDecodeMap = new HashMap<>(27);
@@ -107,6 +129,11 @@ public class DefaultResultRowDecoder implements ResultRowDecoder {
         directDecodeMap.put(RemoteType.DATE.jdbcType, DefaultResultRowDecoder.decodeDate);
         directDecodeMap.put(RemoteType.TIME.jdbcType, DefaultResultRowDecoder.decodeTime);
         directDecodeMap.put(RemoteType.TIMESTAMP.jdbcType, DefaultResultRowDecoder.decodeTimestamp);
+
+        //jdbc 4.0
+        directDecodeMap.put(RemoteType.NCHAR.jdbcType, DefaultResultRowDecoder.decodeString);
+        directDecodeMap.put(RemoteType.NVARCHAR.jdbcType, DefaultResultRowDecoder.decodeString);
+        directDecodeMap.put(RemoteType.LONGNVARCHAR.jdbcType, DefaultResultRowDecoder.decodeString);
     }
 
     private final HashMap<Integer, ResultRowDecodeFunction> externalBigDecimalMap;

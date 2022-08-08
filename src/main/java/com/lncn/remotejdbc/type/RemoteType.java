@@ -1,5 +1,6 @@
 package com.lncn.remotejdbc.type;
 
+import java.sql.Types;
 import java.util.HashMap;
 
 public enum RemoteType {
@@ -22,7 +23,22 @@ public enum RemoteType {
     LONGVARBINARY(java.sql.Types.LONGVARBINARY,byte[].class),
     DATE(java.sql.Types.DATE,java.sql.Date.class),
     TIME(java.sql.Types.TIME,java.sql.Time.class),
-    TIMESTAMP(java.sql.Types.TIMESTAMP,java.sql.Timestamp.class)
+    TIMESTAMP(java.sql.Types.TIMESTAMP,java.sql.Timestamp.class),
+
+    CLOB(java.sql.Types.CLOB ,  java.sql.Clob.class),
+    BLOB(java.sql.Types.BLOB , java.sql.Blob.class),
+    ARRAY(java.sql.Types.ARRAY ,  java.sql.Array.class),
+    DISTINCT(java.sql.Types.DISTINCT , Object.class),
+    STRUCT(java.sql.Types.STRUCT ,  java.sql.Struct.class),
+    REF(java.sql.Types.REF ,  java.sql.Ref.class),
+    DATALINK(java.sql.Types.DATALINK , java.net.URL.class),
+    JAVA_OBJECT(java.sql.Types.JAVA_OBJECT , Object.class),
+    ROWID(java.sql.Types.ROWID , java.sql.RowId.class),
+    NCHAR(java.sql.Types.NCHAR , String.class),
+    NVARCHAR(java.sql.Types.NVARCHAR,String.class),
+    LONGNVARCHAR(java.sql.Types.LONGNVARCHAR , String.class),
+    NCLOB(java.sql.Types.NCLOB , java.sql.NClob.class),
+    SQLXML(java.sql.Types.SQLXML , java.sql.SQLXML.class)
     ;
     public  int jdbcType;
     public final Class<?> javaClass;

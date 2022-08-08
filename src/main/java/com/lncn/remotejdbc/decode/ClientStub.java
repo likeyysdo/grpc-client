@@ -5,8 +5,9 @@ import com.lncn.remotejdbc.decode.resultset.resultrow.DefaultResultRow;
 import com.lncn.remotejdbc.decode.resultset.resultrow.ResultRow;
 import com.lncn.remotejdbc.decode.resultset.metadata.DefaultResultSetMetaDataDecoder;
 import com.lncn.remotejdbc.utils.CodeUtils;
-import com.lncn.remotejdbc.utils.Log;
+import com.lncn.remotejdbc.utils.Logger;
 import com.google.protobuf.ByteString;
+import com.lncn.remotejdbc.utils.LoggerFactory;
 import io.grpc.ManagedChannel;
 import io.grpc.stub.StreamObserver;
 import io.quarkus.remote.ClientStatus;
@@ -20,6 +21,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @Classname ClientChannel
@@ -29,9 +31,9 @@ import java.util.concurrent.Semaphore;
  */
 public class ClientStub {
 
-    private static final Log log = new Log(ClientStub.class);
+    private static final Logger log = LoggerFactory.getLogger(ClientStub.class);
 
-    private static final int DEFAULT_BUFFER_CAPACITY = 500;
+
     private ClientChannel clientChannel;
     private ManagedChannel channel;
     private SimpleStatementGrpc.SimpleStatementStub stub;
@@ -44,19 +46,18 @@ public class ClientStub {
     private ResultRow buffer;
     private String queryBody;
     private SimpleStatementResponse response;
-    public ResultSetMetaData getMetaData() {
-        return metaData;
-    }
     private ResultSetMetaData metaData;
     private ResultRowDecodeFactory decodeFactory;
     private boolean remoteHasNext;
     private boolean error;
     private String errorMessage;
+    private final long timeOutSeconds;
 
 
-    public ClientStub(ClientChannel c) {
+    public ClientStub(ClientChannel c) throws RJdbcSQLException {
         log.debug("new ClientStub");
         clientChannel = c;
+        timeOutSeconds = c.getTimeOutSeconds();
         channel = c.getChannel();
         buffer = new DefaultResultRow(c.getBufferCapacity());
         stub = SimpleStatementGrpc.newStub(channel).withCompression("gzip");
@@ -67,46 +68,8 @@ public class ClientStub {
         requestInitialize();
     }
 
-    public static void main(String[] args) throws SQLException {
-        ClientChannel channel = new ClientChannel("localhost:9000",null);
-
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                ClientStub stub2 = channel.getStub();
-                try {
-                    stub2.query("SELECT * from address");
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                while(true){
-                    try {
-                        if (!stub2.hasNext()) break;
-                    } catch (SQLException e) {
-                        e.printStackTrace();
-                    }
-                    System.out.println(Arrays.toString(stub2.get()));
-                }
-            }
-        };
-        t.start();
-        Thread t1 = new Thread(() -> {
-            ClientStub stub1 = channel.getStub();
-            try {
-                stub1.query("SELECT * from address");
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-            while(true){
-                try {
-                    if (!stub1.hasNext()) break;
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                System.out.println(Arrays.toString(stub1.get()));
-            }
-        });
-        t1.start();
+    public ResultSetMetaData getMetaData() {
+        return metaData;
     }
 
 
@@ -147,11 +110,14 @@ public class ClientStub {
     }
 
 
-    void acquire(){
+    void acquire() throws RJdbcSQLException {
         try {
-            semaphore.acquire();
+            boolean result = semaphore.tryAcquire(timeOutSeconds, TimeUnit.SECONDS);
+            if( !result ){
+                throw new RJdbcSQLException("connect time out in " + timeOutSeconds + " seconds");
+            }
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new RJdbcSQLException(e);
         }
     }
 
@@ -181,7 +147,7 @@ public class ClientStub {
 
 
 
-    private void requestInitialize()    {
+    private void requestInitialize() throws RJdbcSQLException {
         log.debug("send Initialize",ClientStatus.CLIENT_STATUS_INITIALIZE );
         SimpleStatementRequest request;
         SimpleStatementRequest.Builder requestBuilder = SimpleStatementRequest.newBuilder()
@@ -196,7 +162,7 @@ public class ClientStub {
         requestObserver.onNext(request);
     }
 
-    private void requestSendStatement()   {
+    private void requestSendStatement() throws RJdbcSQLException {
         log.debug("send SendStatement",ClientStatus.CLIENT_STATUS_SEND_STATEMENT );
         SimpleStatementRequest request = SimpleStatementRequest.newBuilder()
             .setStatus(ClientStatus.CLIENT_STATUS_SEND_STATEMENT)
@@ -208,7 +174,7 @@ public class ClientStub {
 
 
 
-    private void requestReceiveData()  {
+    private void requestReceiveData() throws RJdbcSQLException {
         log.debug("send ReceiveData",ClientStatus.CLIENT_STATUS_RECEIVE_DATA );
         SimpleStatementRequest request = SimpleStatementRequest.newBuilder()
             .setStatus(ClientStatus.CLIENT_STATUS_RECEIVE_DATA)
@@ -217,7 +183,7 @@ public class ClientStub {
         requestObserver.onNext(request);
     }
 
-    private void requestFinish()  {
+    private void requestFinish() throws RJdbcSQLException {
         log.debug("send Finish",ClientStatus.CLIENT_STATUS_FINISHED );
         SimpleStatementRequest request = SimpleStatementRequest.newBuilder()
             .setStatus(ClientStatus.CLIENT_STATUS_FINISHED)
@@ -343,7 +309,7 @@ public class ClientStub {
                     requestObserver.onCompleted();
                     release();
                 }catch (Exception e){
-                    log.error("onCompleted Error" ,e);
+                    log.info("onCompleted Error Maybe Server has been disconnected" ,e);
                     log.debugError(e);
                 }
             }
