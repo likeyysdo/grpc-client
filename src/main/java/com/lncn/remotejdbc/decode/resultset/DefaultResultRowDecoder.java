@@ -150,7 +150,8 @@ public class DefaultResultRowDecoder implements ResultRowDecoder {
         throws SQLException {
         int jdbcType = resultSetMetaData.getColumnType(column);
         if (jdbcType == RemoteType.NUMERIC.jdbcType || jdbcType == RemoteType.DECIMAL.jdbcType) {
-            int scale = resultSetMetaData.getScale(column);
+            int sourceScale = resultSetMetaData.getScale(column);
+            int scale = Math.max(sourceScale, 0);
             if (scale < defaultBigDecimalList.length) {
                 return defaultBigDecimalList[scale];
             }else if (externalBigDecimalMap.containsKey(scale)) {

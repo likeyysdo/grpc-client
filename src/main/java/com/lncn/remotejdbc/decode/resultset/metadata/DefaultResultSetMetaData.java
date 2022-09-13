@@ -1,7 +1,10 @@
 package com.lncn.remotejdbc.decode.resultset.metadata;
 
 
+import com.lncn.remotejdbc.decode.ClientStub;
 import com.lncn.remotejdbc.type.RemoteType;
+import com.lncn.remotejdbc.utils.Logger;
+import com.lncn.remotejdbc.utils.LoggerFactory;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -14,7 +17,7 @@ import java.util.Arrays;
  */
 public class DefaultResultSetMetaData implements java.sql.ResultSetMetaData{
     private final Field[] fields;
-
+    private static final Logger log = LoggerFactory.getLogger(DefaultResultSetMetaData.class);
     @Override
     public String toString() {
         return "DefaultResultSetMetaData{" +
@@ -26,7 +29,7 @@ public class DefaultResultSetMetaData implements java.sql.ResultSetMetaData{
 
     public DefaultResultSetMetaData(Field[] fields) {
         this.fields = fields;
-
+        log.debug(this.fields);
 
     }
 
