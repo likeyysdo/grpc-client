@@ -32,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 public class ClientStub {
 
     private static final Logger log = LoggerFactory.getLogger(ClientStub.class);
-
-
     private ClientChannel clientChannel;
     private ManagedChannel channel;
     private SimpleStatementGrpc.SimpleStatementStub stub;
@@ -173,7 +171,6 @@ public class ClientStub {
     }
 
 
-
     private void requestReceiveData() throws RJdbcSQLException {
         log.debug("send ReceiveData",ClientStatus.CLIENT_STATUS_RECEIVE_DATA );
         SimpleStatementRequest request = SimpleStatementRequest.newBuilder()
@@ -250,7 +247,6 @@ public class ClientStub {
             buffer.put( decodeFactory.read(b.toByteArray()) );
         }
         remoteHasNext = true;
-
     }
     private void responseNotHasNextData() throws IOException, InterruptedException {
         List<ByteString> l = response.getResultList();
@@ -258,7 +254,6 @@ public class ClientStub {
             buffer.put( decodeFactory.read(b.toByteArray()) );
         }
         remoteHasNext = false;
-
     }
     private void responseCanceled(){
         canceled = true;

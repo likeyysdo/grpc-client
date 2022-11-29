@@ -46,7 +46,7 @@ public class CodeUtils {
     }
 
 
-    public   static String storeProperties(Properties properties) throws IOException {
+    public  static String storeProperties(Properties properties) throws IOException {
         if( properties == null || properties.isEmpty() ) return "";
         CharArrayWriter writer = new CharArrayWriter();
         properties.store(writer,"");

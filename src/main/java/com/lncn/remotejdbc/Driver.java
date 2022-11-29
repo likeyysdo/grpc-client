@@ -27,22 +27,22 @@ public class Driver implements java.sql.Driver {
     }
 
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
-        var url = "jdbc:rsql://localhost:9000?fetchSize=1000&&";
-
+        var url = "jdbc:rsql://localhost:8088?fetchSize=1000";
+        com.lncn.remotejdbc.utils.Logger.setSimpleLog(true);
         Class.forName("com.lncn.remotejdbc.Driver");
         Properties properties = new Properties();
         //properties.put("enableCache", "true");
         //properties.put("fetchSize", "4000");
-        properties.put("logLevel","info");
+        properties.put("logLevel","DEBUG");
         properties.put("timeOut","10");
-
         try (var con = DriverManager.getConnection(url, properties)
              ; var st = con.createStatement()
         ) {
             System.out.println(con.getMetaData().getURL());
             // mydatetime financialpostingline
             //SELECT * FROM financialpostingline limit 50
-            try (var rs = st.executeQuery("SELECT * FROM elementattribute limit 50")) {
+            try (var rs = st.executeQuery("SELECT * FROM \"FinancialPostingLine\"\n" +
+                "where rownum < 40")) {
                 int c = rs.getMetaData().getColumnCount();
                 System.out.println("getColumnCount " + c);
                 while (rs.next()) {
